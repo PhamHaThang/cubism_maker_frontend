@@ -1,0 +1,191 @@
+@import "tailwindcss";
+
+@theme {
+    --font-sans: "Inter", system-ui, sans-serif;
+    --color-surface: #f5f5f5;
+    --color-border: #e0e0e0;
+    --color-accent: #1a1a1a;
+    --color-muted: #6b7280;
+    --color-success: #10b981;
+    --color-danger: #ef4444;
+    --color-warning: #f59e0b;
+}
+
+/* Global reset & base */
+html,
+body,
+#root {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    font-family: "Inter", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: #ffffff;
+    color: #000000;
+    line-height: 1.5;
+}
+
+#root {
+    isolation: isolate;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+/* Editor canvas */
+.editor-canvas canvas {
+    outline: none !important;
+    cursor: crosshair;
+}
+
+/* Smooth transitions */
+a,
+button {
+    transition: all 0.15s ease-in-out;
+}
+
+/* Selection */
+::selection {
+    background-color: #000;
+    color: #fff;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes pulse-soft {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.25s ease-out forwards;
+}
+
+.animate-slide-up {
+    animation: slideUp 0.35s ease-out forwards;
+}
+
+.animate-scale-in {
+    animation: scaleIn 0.2s ease-out forwards;
+}
+
+.glass-surface {
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(10px);
+    border: 1px solid #eaeaea;
+}
+
+/* Staggered card animations */
+.card-stagger > * {
+    opacity: 0;
+    animation: fadeIn 0.25s ease-out forwards;
+}
+
+.card-stagger > *:nth-child(1) {
+    animation-delay: 0.05s;
+}
+.card-stagger > *:nth-child(2) {
+    animation-delay: 0.1s;
+}
+.card-stagger > *:nth-child(3) {
+    animation-delay: 0.15s;
+}
+.card-stagger > *:nth-child(4) {
+    animation-delay: 0.2s;
+}
+.card-stagger > *:nth-child(5) {
+    animation-delay: 0.25s;
+}
+.card-stagger > *:nth-child(6) {
+    animation-delay: 0.3s;
+}
+.card-stagger > *:nth-child(7) {
+    animation-delay: 0.35s;
+}
+.card-stagger > *:nth-child(8) {
+    animation-delay: 0.4s;
+}
+.card-stagger > *:nth-child(9) {
+    animation-delay: 0.45s;
+}
+.card-stagger > *:nth-child(10) {
+    animation-delay: 0.5s;
+}
+.card-stagger > *:nth-child(11) {
+    animation-delay: 0.55s;
+}
+.card-stagger > *:nth-child(12) {
+    animation-delay: 0.6s;
+}
+
+/* Color picker styling */
+input[type="color"] {
+    -webkit-appearance: none;
+    border: none;
+    cursor: pointer;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+}
