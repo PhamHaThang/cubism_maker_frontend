@@ -9,7 +9,7 @@ import {
     Trash2,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { api } from "../services/api";
+import { api, buildApiUrl } from "../services/api";
 import { Level } from "../types";
 import { useAuthStore } from "../store/authStore";
 import { useEditorStore } from "../store/editorStore";
@@ -152,7 +152,9 @@ const MyLevelsPage: React.FC = () => {
                                             type="button"
                                             onClick={() =>
                                                 window.open(
-                                                    `/api/levels/vr/download/${level.code}`,
+                                                    buildApiUrl(
+                                                        `/api/levels/vr/download/${level.code}`,
+                                                    ),
                                                     "_blank",
                                                 )
                                             }

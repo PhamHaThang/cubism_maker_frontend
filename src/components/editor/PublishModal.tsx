@@ -4,7 +4,7 @@ import { Input } from "../ui/Input";
 import { Button } from "../ui/Button";
 import { useEditorStore } from "../../store/editorStore";
 import { useAuthStore } from "../../store/authStore";
-import { api } from "../../services/api";
+import { api, buildApiUrl } from "../../services/api";
 import { Copy, Check, ExternalLink } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -141,7 +141,9 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                             variant="primary"
                             onClick={() =>
                                 window.open(
-                                    `/api/levels/vr/download/${publishedCode}`,
+                                    buildApiUrl(
+                                        `/api/levels/vr/download/${publishedCode}`,
+                                    ),
                                     "_blank",
                                 )
                             }>

@@ -4,7 +4,7 @@ import { Level } from "../../types";
 import { Badge } from "../ui/Badge";
 import { getDifficultyColor } from "../../utils/helpers";
 import { useAuthStore } from "../../store/authStore";
-import { api } from "../../services/api";
+import { api, buildApiUrl } from "../../services/api";
 import toast from "react-hot-toast";
 
 interface LevelCardProps {
@@ -53,7 +53,10 @@ export const LevelCard: React.FC<LevelCardProps> = ({
     };
 
     const handleDownload = () => {
-        window.open(`/api/levels/vr/download/${level.code}`, "_blank");
+        window.open(
+            buildApiUrl(`/api/levels/vr/download/${level.code}`),
+            "_blank",
+        );
     };
 
     return (

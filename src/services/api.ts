@@ -1,7 +1,23 @@
 import axios from "axios";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+
+export const buildApiUrl = (path: string): string => {
+    if (/^https?:\/\//i.test(path)) {
+        return path;
+    }
+
+    if (!API_BASE_URL) {
+        return path;
+    }
+
+    const base = API_BASE_URL.replace(/\/+$/, "");
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    return `${base}${normalizedPath}`;
+};
+
 export const api = axios.create({
-    baseURL: "",
+    baseURL: API_BASE_URL,
     headers: {
         "Content-Type": "application/json",
     },
