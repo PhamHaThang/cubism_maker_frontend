@@ -25,7 +25,7 @@ export const api = axios.create({
 
 // Attach auth token to every request
 api.interceptors.request.use((config) => {
-    const stored = localStorage.getItem("cubism-auth");
+    const stored = localStorage.getItem("CubeCube-auth");
     if (stored) {
         try {
             const { state } = JSON.parse(stored);
@@ -53,9 +53,9 @@ api.interceptors.response.use(
                 return Promise.reject(error);
             }
 
-            const stored = localStorage.getItem("cubism-auth");
+            const stored = localStorage.getItem("CubeCube-auth");
             if (stored) {
-                localStorage.removeItem("cubism-auth");
+                localStorage.removeItem("CubeCube-auth");
                 if (
                     window.location.pathname !== "/login" &&
                     window.location.pathname !== "/register"

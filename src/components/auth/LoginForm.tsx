@@ -35,7 +35,7 @@ export const LoginForm: React.FC = () => {
                         Welcome back
                     </h1>
                     <p className="text-sm text-neutral-500 mt-1.5">
-                        Sign in to your Cubism Maker account
+                        Sign in to your CubeCube Maker account
                     </p>
                 </div>
 

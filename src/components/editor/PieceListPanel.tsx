@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import {
+    AlertTriangle,
     Layers,
     Layers3,
     Plus,
@@ -19,6 +20,7 @@ export const PieceListPanel: React.FC<{ onPublish: () => void }> = ({
         voxels,
         currentPieceId,
         selectPiece,
+        deletePiece,
         newPiece,
         setPieceColor,
         undo,
@@ -62,7 +64,7 @@ export const PieceListPanel: React.FC<{ onPublish: () => void }> = ({
 
             <div className="max-h-64 overflow-y-auto p-2.5 space-y-1.5">
                 <div className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl border border-neutral-300 bg-neutral-100/70">
-                    <span className="w-4 h-4 rounded-md border border-neutral-300 shrink-0 bg-gradient-to-br from-neutral-300 to-neutral-500" />
+                    <span className="w-4 h-4 rounded-md border border-neutral-300 shrink-0 bg-linear-to-br from-neutral-300 to-neutral-500" />
                     <span className="text-xs font-semibold text-neutral-700 flex-1 truncate">
                         All Pieces
                     </span>
@@ -74,6 +76,7 @@ export const PieceListPanel: React.FC<{ onPublish: () => void }> = ({
                 {pieces.map((piece) => {
                     const isActive = piece.id === currentPieceId;
                     const voxelCount = pieceVoxelCount.get(piece.id) || 0;
+                    const isLastPiece = pieces.length === 1;
 
                     return (
                         <div
@@ -113,6 +116,22 @@ export const PieceListPanel: React.FC<{ onPublish: () => void }> = ({
                                 className="w-6 h-6 rounded-md border border-neutral-200 cursor-pointer"
                                 title={`Change color for Piece #${piece.id + 1}`}
                             />
+                            <button
+                                type="button"
+                                onClick={() => deletePiece(piece.id)}
+                                disabled={isLastPiece}
+                                className={`ml-0.5 p-1.5 rounded-md border transition-colors border-red-300 text-red-500 bg-red-50 ${
+                                    isLastPiece
+                                        ? "cursor-not-allowed "
+                                        : " hover:text-red-500 hover:bg-red-100 cursor-pointer "
+                                }`}
+                                title={
+                                    isLastPiece
+                                        ? "Keep at least one piece"
+                                        : `Delete Piece #${piece.id + 1}`
+                                }>
+                                <Trash2 size={12} />
+                            </button>
                         </div>
                     );
                 })}
@@ -161,7 +180,7 @@ export const PieceListPanel: React.FC<{ onPublish: () => void }> = ({
                         variant="secondary"
                         size="sm"
                         onClick={undo}
-                        className="!px-2"
+                        className="px-2!"
                         title="Undo">
                         <Undo2 size={14} />
                     </Button>
@@ -169,7 +188,7 @@ export const PieceListPanel: React.FC<{ onPublish: () => void }> = ({
                         variant="secondary"
                         size="sm"
                         onClick={redo}
-                        className="!px-2"
+                        className="px-2!"
                         title="Redo">
                         <Redo2 size={14} />
                     </Button>
@@ -177,8 +196,8 @@ export const PieceListPanel: React.FC<{ onPublish: () => void }> = ({
                         variant="danger"
                         size="sm"
                         onClick={clearAll}
-                        className="!px-2"
-                        title="Clear">
+                        className="px-2!"
+                        title="Clear all voxels and pieces">
                         <Trash2 size={14} />
                     </Button>
                 </div>

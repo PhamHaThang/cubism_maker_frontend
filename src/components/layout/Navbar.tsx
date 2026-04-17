@@ -23,7 +23,7 @@ export const Navbar: React.FC = () => {
                             className="text-black group-hover:rotate-12 transition-transform duration-150"
                         />
                         <span className="text-xs sm:text-sm font-bold tracking-[0.08em] text-black">
-                            CUBISM MAKER
+                            CUBECUBE MAKER
                         </span>
                     </Link>
 

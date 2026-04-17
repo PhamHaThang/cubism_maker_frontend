@@ -23,9 +23,10 @@ const HomePage: React.FC = () => {
                                 </span>
                             </h1>
                             <p className="text-base md:text-lg text-neutral-500 mt-4 md:mt-5 max-w-xl leading-relaxed">
-                                Design custom Cubism VR levels in your browser,
-                                publish them with a unique code, and let players
-                                worldwide download them to their headset.
+                                Design custom CubeCube VR levels in your
+                                browser, publish them with a unique code, and
+                                let players worldwide download them to their
+                                headset.
                             </p>
                             <div className="flex flex-wrap items-center gap-3 mt-7 md:mt-9">
                                 <Link to="/editor">

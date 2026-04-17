@@ -48,7 +48,7 @@ export const RegisterForm: React.FC = () => {
                         Create account
                     </h1>
                     <p className="text-sm text-neutral-500 mt-1.5">
-                        Join the Cubism Maker community
+                        Join the CubeCube Maker community
                     </p>
                 </div>
 
@@ -59,7 +59,7 @@ export const RegisterForm: React.FC = () => {
                     <Input
                         label="Username"
                         type="text"
-                        placeholder="cubism_creator"
+                        placeholder="CubeCube_creator"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         minLength={3}

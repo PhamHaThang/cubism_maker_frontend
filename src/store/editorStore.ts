@@ -39,6 +39,7 @@ interface EditorState {
     setPieceColor: (id: number, color: string) => void;
     newPiece: () => void;
     selectPiece: (id: number) => void;
+    deletePiece: (id: number) => void;
     loadLevel: (level: Level) => void;
     clearEditingLevel: () => void;
     clearEditorState: () => void;
@@ -143,6 +144,38 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         if (piece) {
             set({ currentPieceId: id, currentColor: piece.color });
         }
+    },
+
+    deletePiece: (id) => {
+        const state = get();
+        const targetPiece = state.pieces.find((piece) => piece.id === id);
+        if (!targetPiece) return;
+
+        const remainingPieces = state.pieces.filter((piece) => piece.id !== id);
+        const remainingVoxels: Record<string, VoxelData> = {};
+
+        Object.entries(state.voxels).forEach(([key, voxel]) => {
+            if (voxel.pieceId !== id) {
+                remainingVoxels[key] = voxel;
+            }
+        });
+
+        const snap = snapshot(state);
+        const nextPieces =
+            remainingPieces.length > 0
+                ? remainingPieces
+                : [{ id: 0, color: PRESET_COLORS[0] }];
+        const nextActivePiece =
+            nextPieces.find((piece) => piece.id !== id) ?? nextPieces[0];
+
+        set({
+            pieces: nextPieces,
+            voxels: remainingVoxels,
+            currentPieceId: nextActivePiece?.id ?? 0,
+            currentColor: nextActivePiece?.color ?? PRESET_COLORS[0],
+            undoStack: [...state.undoStack, snap].slice(-50),
+            redoStack: [],
+        });
     },
 
     loadLevel: (level) => {
