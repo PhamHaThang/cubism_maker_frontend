@@ -32,6 +32,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
     const [description, setDescription] = useState("");
     const [difficulty, setDifficulty] = useState("medium");
     const [timeSeconds, setTimeSeconds] = useState("0");
+    const [status, setStatus] = useState<"public" | "private">("public");
     const [publishing, setPublishing] = useState(false);
     const [publishedCode, setPublishedCode] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
@@ -43,6 +44,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
         setName(editingLevel?.name || "");
         setDifficulty(editingLevel?.difficulty || "medium");
         setTimeSeconds(String(editingLevel?.timeLimitSeconds ?? 0));
+        setStatus(editingLevel?.status || "public");
     }, [editingLevel, isOpen]);
 
     const handlePublish = async () => {
@@ -76,6 +78,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
             const blueprint = generateBlueprint();
             if (isEditing && editingLevel?.code) {
                 await api.put(`/api/levels/${editingLevel.code}`, {
+                    status,
                     meta: {
                         name: name.trim(),
                         difficulty,
@@ -89,6 +92,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                     name: name.trim(),
                     difficulty,
                     timeLimitSeconds: normalizedTimeSeconds,
+                    status,
                 });
                 setPublishedCode(editingLevel.code);
                 toast.success("Level updated successfully!");
@@ -98,6 +102,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                     description: description.trim(),
                     difficulty,
                     timeSeconds: normalizedTimeSeconds,
+                    status,
                     blueprint,
                 });
                 setPublishedCode(res.data.code);
@@ -126,6 +131,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
         setDescription("");
         setDifficulty("medium");
         setTimeSeconds("0");
+        setStatus("public");
         if (!isEditing) {
             clearEditingLevel();
         }
@@ -244,6 +250,23 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                         onChange={(e) => setTimeSeconds(e.target.value)}
                         placeholder="0"
                     />
+
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold text-neutral-500 uppercase tracking-[0.14em]">
+                            Status
+                        </label>
+                        <select
+                            value={status}
+                            onChange={(e) =>
+                                setStatus(
+                                    e.target.value as "public" | "private",
+                                )
+                            }
+                            className="w-full px-3.5 py-3 text-sm bg-white border border-neutral-300 rounded-xl outline-none focus:border-black focus:ring-2 focus:ring-black/10 cursor-pointer">
+                            <option value="public">Public</option>
+                            <option value="private">Private (only me)</option>
+                        </select>
+                    </div>
 
                     <div className="p-3.5 bg-neutral-50 rounded-xl border border-neutral-100">
                         <div className="text-xs text-neutral-500">

@@ -25,6 +25,7 @@ export interface BlueprintPiece {
 export interface Level {
     _id: string;
     code: string;
+    status: "public" | "private";
     meta: PieceMeta;
     grid: number[][];
     pieces: BlueprintPiece[];

@@ -30,7 +30,8 @@ export const LevelGrid: React.FC = () => {
                 const params: Record<string, string | number> = {
                     sort,
                     page,
-                    limit: 12,
+                    limit: 6,
+                    status: "public",
                 };
                 if (search) params.search = search;
                 if (difficulty !== "all") params.difficulty = difficulty;
@@ -180,6 +181,8 @@ export const LevelGrid: React.FC = () => {
                     <Pagination
                         currentPage={pagination.page}
                         totalPages={pagination.pages}
+                        totalItems={pagination.total}
+                        itemsPerPage={pagination.limit}
                         onPageChange={(page) => fetchLevels(page)}
                     />
                 </>

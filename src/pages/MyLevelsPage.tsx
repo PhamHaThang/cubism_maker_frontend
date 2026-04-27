@@ -6,6 +6,8 @@ import {
     Download,
     Edit3,
     Loader2,
+    Search,
+    SlidersHorizontal,
     Trash2,
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -25,6 +27,13 @@ const MyLevelsPage: React.FC = () => {
     const [levels, setLevels] = useState<Level[]>([]);
     const [loading, setLoading] = useState(true);
     const [deletingCode, setDeletingCode] = useState<string | null>(null);
+    const [searchInput, setSearchInput] = useState("");
+    const [searchTerm, setSearchTerm] = useState("");
+    const [difficultyFilter, setDifficultyFilter] = useState<string>("all");
+    const [statusFilter, setStatusFilter] = useState<
+        "all" | "public" | "private"
+    >("all");
+    const [sort, setSort] = useState<"newest" | "oldest" | "name">("newest");
     const [pagination, setPagination] = useState<LevelPagination>({
         page: 1,
         limit: 12,
@@ -37,8 +46,21 @@ const MyLevelsPage: React.FC = () => {
             if (!user?.id) return;
             setLoading(true);
             try {
+                const params: Record<string, string | number> = {
+                    page,
+                    limit: 6,
+                    sort,
+                };
+                if (searchTerm) params.search = searchTerm;
+                if (difficultyFilter !== "all") {
+                    params.difficulty = difficultyFilter;
+                }
+                if (statusFilter !== "all") {
+                    params.status = statusFilter;
+                }
+
                 const res = await api.get(`/api/levels/user/${user.id}`, {
-                    params: { page, limit: 12 },
+                    params,
                 });
                 setLevels(res.data.levels ?? []);
                 if (res.data.pagination) {
@@ -51,8 +73,17 @@ const MyLevelsPage: React.FC = () => {
                 setLoading(false);
             }
         },
-        [user?.id],
+        [user?.id, sort, searchTerm, difficultyFilter, statusFilter],
     );
+
+    useEffect(() => {
+        const timer = window.setTimeout(() => {
+            const nextSearch = searchInput.trim();
+            setSearchTerm((prev) => (prev === nextSearch ? prev : nextSearch));
+        }, 400);
+
+        return () => window.clearTimeout(timer);
+    }, [searchInput]);
 
     useEffect(() => {
         fetchLevels(1);
@@ -120,6 +151,68 @@ const MyLevelsPage: React.FC = () => {
                     Manage the levels you created. Edit them in the editor or
                     delete them permanently.
                 </p>
+            </div>
+
+            <div className="mb-5 md:mb-6 flex flex-col lg:flex-row gap-2.5 md:gap-3 p-3 md:p-4 rounded-2xl border border-neutral-200 bg-white/80 backdrop-blur-sm">
+                <div className="relative flex-1">
+                    <Search
+                        size={16}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
+                    />
+                    <input
+                        type="text"
+                        placeholder="Search your levels..."
+                        value={searchInput}
+                        onChange={(e) => setSearchInput(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                setSearchTerm(searchInput.trim());
+                            }
+                        }}
+                        className="w-full pl-10 pr-4 py-2.5 md:py-3 text-sm bg-white border border-neutral-200 rounded-xl outline-none focus:border-black focus:ring-2 focus:ring-black/10 transition-all"
+                    />
+                </div>
+
+                <div className="flex items-center gap-2 w-full lg:w-auto">
+                    <SlidersHorizontal
+                        size={14}
+                        className="text-neutral-400 shrink-0"
+                    />
+                    <select
+                        value={difficultyFilter}
+                        onChange={(e) => setDifficultyFilter(e.target.value)}
+                        className="w-full lg:w-auto px-3.5 py-2.5 md:py-3 text-xs bg-white border border-neutral-200 rounded-xl outline-none focus:border-black focus:ring-2 focus:ring-black/10 cursor-pointer">
+                        <option value="all">All Difficulties</option>
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                        <option value="expert">Expert</option>
+                    </select>
+                </div>
+
+                <select
+                    value={statusFilter}
+                    onChange={(e) =>
+                        setStatusFilter(
+                            e.target.value as "all" | "public" | "private",
+                        )
+                    }
+                    className="w-full lg:w-auto px-3.5 py-2.5 md:py-3 text-xs bg-white border border-neutral-200 rounded-xl outline-none focus:border-black focus:ring-2 focus:ring-black/10 cursor-pointer">
+                    <option value="all">All Statuses</option>
+                    <option value="public">Public</option>
+                    <option value="private">Private</option>
+                </select>
+
+                <select
+                    value={sort}
+                    onChange={(e) =>
+                        setSort(e.target.value as "newest" | "oldest" | "name")
+                    }
+                    className="w-full lg:w-auto px-3.5 py-2.5 md:py-3 text-xs bg-white border border-neutral-200 rounded-xl outline-none focus:border-black focus:ring-2 focus:ring-black/10 cursor-pointer">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="name">Alphabetical</option>
+                </select>
             </div>
 
             {loading ? (
@@ -195,9 +288,20 @@ const MyLevelsPage: React.FC = () => {
                                                 {level.meta?.name ||
                                                     "Untitled Level"}
                                             </h2>
-                                            <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 rounded-full border border-neutral-200 px-2 py-0.5">
-                                                {level.code}
-                                            </span>
+                                            <div className="flex items-center gap-1.5">
+                                                <span
+                                                    className={`text-[10px] font-semibold uppercase tracking-wider rounded-full border px-2 py-0.5 ${
+                                                        level.status ===
+                                                        "private"
+                                                            ? "text-amber-700 border-amber-200 bg-amber-50"
+                                                            : "text-emerald-700 border-emerald-200 bg-emerald-50"
+                                                    }`}>
+                                                    {level.status || "public"}
+                                                </span>
+                                                <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 rounded-full border border-neutral-200 px-2 py-0.5">
+                                                    {level.code}
+                                                </span>
+                                            </div>
                                         </div>
 
                                         <div className="flex items-center gap-1.5 text-xs text-neutral-500 mb-4">
@@ -243,6 +347,8 @@ const MyLevelsPage: React.FC = () => {
                     <Pagination
                         currentPage={pagination.page}
                         totalPages={pagination.pages}
+                        totalItems={pagination.total}
+                        itemsPerPage={pagination.limit}
                         onPageChange={(page) => fetchLevels(page)}
                     />
                 </>
