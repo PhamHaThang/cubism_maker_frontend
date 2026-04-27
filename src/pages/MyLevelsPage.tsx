@@ -14,6 +14,7 @@ import { Level } from "../types";
 import { useAuthStore } from "../store/authStore";
 import { useEditorStore } from "../store/editorStore";
 import { Button } from "../components/ui/Button";
+import { LevelPreview3D } from "../components/community/LevelPreview3D";
 
 const MyLevelsPage: React.FC = () => {
     const { user } = useAuthStore();
@@ -111,34 +112,17 @@ const MyLevelsPage: React.FC = () => {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 card-stagger">
                     {levels.map((level) => {
-                        const previewColors = (level.pieces || [])
-                            .map((piece) => `#${piece.color}`)
-                            .slice(0, 6);
-
                         return (
                             <article
                                 key={level._id}
                                 className="group bg-white border border-neutral-200 rounded-2xl overflow-hidden hover:border-black hover:shadow-[0_24px_48px_-30px_rgba(0,0,0,0.85)] transition-all duration-150 ease-in-out">
-                                <div className="relative h-40 bg-gradient-to-b from-neutral-50 to-white flex items-center justify-center overflow-hidden">
-                                    <div className="grid grid-cols-3 gap-2 p-5">
-                                        {previewColors.length > 0 ? (
-                                            previewColors.map(
-                                                (color, index) => (
-                                                    <div
-                                                        key={`${color}-${index}`}
-                                                        className="w-8 h-8 rounded-md border border-white/70 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.35)] transition-transform duration-250 group-hover:scale-110"
-                                                        style={{
-                                                            backgroundColor:
-                                                                color,
-                                                        }}
-                                                    />
-                                                ),
-                                            )
-                                        ) : (
-                                            <div className="col-span-3 text-xs text-neutral-400">
-                                                No preview
-                                            </div>
-                                        )}
+                                <div className="relative h-48 bg-linear-to-b from-neutral-50 to-white overflow-hidden flex items-center justify-center">
+                                    <LevelPreview3D level={level} />
+
+                                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
+                                        <span className="inline-flex items-center rounded-full border border-neutral-200 bg-white/85 backdrop-blur px-2 py-0.5 text-[10px] font-medium text-neutral-500">
+                                            Drag to rotate • Scroll to zoom
+                                        </span>
                                     </div>
 
                                     <div className="absolute top-3 left-3">
