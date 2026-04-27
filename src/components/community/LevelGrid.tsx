@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Search, SlidersHorizontal, Loader2 } from "lucide-react";
-import { Level } from "../../types";
+import { Level, LevelPagination } from "../../types";
 import { api } from "../../services/api";
 import { LevelCard } from "./LevelCard";
+import { Pagination } from "../ui/Pagination";
 import { useAuthStore } from "../../store/authStore";
 
 export const LevelGrid: React.FC = () => {
@@ -13,23 +14,39 @@ export const LevelGrid: React.FC = () => {
     const [search, setSearch] = useState("");
     const [sort, setSort] = useState<"newest" | "popular" | "name">("newest");
     const [difficulty, setDifficulty] = useState<string>("all");
+    const [pagination, setPagination] = useState<LevelPagination>({
+        page: 1,
+        limit: 12,
+        total: 0,
+        pages: 0,
+    });
 
-    const fetchLevels = useCallback(async () => {
-        setLoading(true);
-        try {
-            const params: Record<string, string> = { sort };
-            if (search) params.search = search;
-            if (difficulty !== "all") params.difficulty = difficulty;
+    const fetchLevels = useCallback(
+        async (page = 1) => {
+            setLoading(true);
+            try {
+                const params: Record<string, string | number> = {
+                    sort,
+                    page,
+                    limit: 6,
+                };
+                if (search) params.search = search;
+                if (difficulty !== "all") params.difficulty = difficulty;
 
-            const res = await api.get("/api/levels", { params });
-            // Server returns { levels: [...], pagination: {...} }
-            setLevels(res.data.levels ?? res.data ?? []);
-        } catch {
-            setLevels([]);
-        } finally {
-            setLoading(false);
-        }
-    }, [sort, search, difficulty]);
+                const res = await api.get("/api/levels", { params });
+                // Server returns { levels: [...], pagination: {...} }
+                setLevels(res.data.levels ?? []);
+                if (res.data.pagination) {
+                    setPagination(res.data.pagination);
+                }
+            } catch {
+                setLevels([]);
+            } finally {
+                setLoading(false);
+            }
+        },
+        [sort, search, difficulty],
+    );
 
     const fetchFavorites = useCallback(async () => {
         if (!user) return;
@@ -44,7 +61,7 @@ export const LevelGrid: React.FC = () => {
     }, [user]);
 
     useEffect(() => {
-        fetchLevels();
+        fetchLevels(1);
     }, [fetchLevels]);
     useEffect(() => {
         fetchFavorites();
@@ -73,7 +90,7 @@ export const LevelGrid: React.FC = () => {
                         placeholder="Search levels..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && fetchLevels()}
+                        onKeyDown={(e) => e.key === "Enter" && fetchLevels(1)}
                         className="w-full pl-10 pr-4 py-2.5 md:py-3 text-sm bg-white border border-neutral-200 rounded-xl outline-none focus:border-black focus:ring-2 focus:ring-black/10 transition-all"
                     />
                 </div>
@@ -122,18 +139,25 @@ export const LevelGrid: React.FC = () => {
                     </p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 card-stagger">
-                    {levels.map((level) => (
-                        <LevelCard
-                            key={level._id}
-                            level={level}
-                            isFavorited={favoriteIds.has(level._id)}
-                            onFavoriteToggle={() =>
-                                handleFavoriteToggle(level._id)
-                            }
-                        />
-                    ))}
-                </div>
+                <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 card-stagger">
+                        {levels.map((level) => (
+                            <LevelCard
+                                key={level._id}
+                                level={level}
+                                isFavorited={favoriteIds.has(level._id)}
+                                onFavoriteToggle={() =>
+                                    handleFavoriteToggle(level._id)
+                                }
+                            />
+                        ))}
+                    </div>
+                    <Pagination
+                        currentPage={pagination.page}
+                        totalPages={pagination.pages}
+                        onPageChange={(page) => fetchLevels(page)}
+                    />
+                </>
             )}
         </div>
     );

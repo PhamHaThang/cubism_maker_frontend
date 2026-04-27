@@ -10,11 +10,12 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { api, buildApiUrl } from "../services/api";
-import { Level } from "../types";
+import { Level, LevelPagination } from "../types";
 import { useAuthStore } from "../store/authStore";
 import { useEditorStore } from "../store/editorStore";
 import { Button } from "../components/ui/Button";
 import { LevelPreview3D } from "../components/community/LevelPreview3D";
+import { Pagination } from "../components/ui/Pagination";
 
 const MyLevelsPage: React.FC = () => {
     const { user } = useAuthStore();
@@ -23,23 +24,37 @@ const MyLevelsPage: React.FC = () => {
     const [levels, setLevels] = useState<Level[]>([]);
     const [loading, setLoading] = useState(true);
     const [deletingCode, setDeletingCode] = useState<string | null>(null);
+    const [pagination, setPagination] = useState<LevelPagination>({
+        page: 1,
+        limit: 12,
+        total: 0,
+        pages: 0,
+    });
 
-    const fetchLevels = useCallback(async () => {
-        if (!user?.id) return;
-        setLoading(true);
-        try {
-            const res = await api.get(`/api/levels/user/${user.id}`);
-            setLevels(res.data.levels ?? []);
-        } catch {
-            setLevels([]);
-            toast.error("Failed to load your levels");
-        } finally {
-            setLoading(false);
-        }
-    }, [user?.id]);
+    const fetchLevels = useCallback(
+        async (page = 1) => {
+            if (!user?.id) return;
+            setLoading(true);
+            try {
+                const res = await api.get(`/api/levels/user/${user.id}`, {
+                    params: { page, limit: 6 },
+                });
+                setLevels(res.data.levels ?? []);
+                if (res.data.pagination) {
+                    setPagination(res.data.pagination);
+                }
+            } catch {
+                setLevels([]);
+                toast.error("Failed to load your levels");
+            } finally {
+                setLoading(false);
+            }
+        },
+        [user?.id],
+    );
 
     useEffect(() => {
-        fetchLevels();
+        fetchLevels(1);
     }, [fetchLevels]);
 
     if (!user) return <Navigate to="/login" />;
@@ -59,7 +74,7 @@ const MyLevelsPage: React.FC = () => {
         try {
             await api.delete(`/api/levels/${level.code}`);
             toast.success("Level deleted");
-            await fetchLevels();
+            await fetchLevels(pagination.page);
         } catch (error: any) {
             toast.error(
                 error.response?.data?.message || "Failed to delete level",
@@ -110,92 +125,104 @@ const MyLevelsPage: React.FC = () => {
                     </div>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 card-stagger">
-                    {levels.map((level) => {
-                        return (
-                            <article
-                                key={level._id}
-                                className="group bg-white border border-neutral-200 rounded-2xl overflow-hidden hover:border-black hover:shadow-[0_24px_48px_-30px_rgba(0,0,0,0.85)] transition-all duration-150 ease-in-out">
-                                <div className="relative h-48 bg-linear-to-b from-neutral-50 to-white overflow-hidden flex items-center justify-center">
-                                    <LevelPreview3D level={level} />
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 card-stagger">
+                        {levels.map((level) => {
+                            return (
+                                <article
+                                    key={level._id}
+                                    className="group bg-white border border-neutral-200 rounded-2xl overflow-hidden hover:border-black hover:shadow-[0_24px_48px_-30px_rgba(0,0,0,0.85)] transition-all duration-150 ease-in-out">
+                                    <div className="relative h-48 bg-linear-to-b from-neutral-50 to-white overflow-hidden flex items-center justify-center">
+                                        <LevelPreview3D level={level} />
 
-                                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
-                                        <span className="inline-flex items-center rounded-full border border-neutral-200 bg-white/85 backdrop-blur px-2 py-0.5 text-[10px] font-medium text-neutral-500">
-                                            Drag to rotate • Scroll to zoom
-                                        </span>
+                                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
+                                            <span className="inline-flex items-center rounded-full border border-neutral-200 bg-white/85 backdrop-blur px-2 py-0.5 text-[10px] font-medium text-neutral-500">
+                                                Drag to rotate • Scroll to zoom
+                                            </span>
+                                        </div>
+
+                                        <div className="absolute top-3 left-3">
+                                            <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full bg-neutral-100 text-neutral-600 border border-neutral-200">
+                                                {level.meta?.difficulty ||
+                                                    "medium"}
+                                            </span>
+                                        </div>
+
+                                        <div className="absolute top-3 right-3 flex items-center gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    window.open(
+                                                        buildApiUrl(
+                                                            `/api/levels/vr/download/${level.code}`,
+                                                        ),
+                                                        "_blank",
+                                                    )
+                                                }
+                                                className="p-2 rounded-full bg-white/90 border border-neutral-200 text-neutral-500 hover:text-black hover:bg-neutral-100 transition-colors cursor-pointer"
+                                                title="Download">
+                                                <Download size={14} />
+                                            </button>
+                                        </div>
                                     </div>
 
-                                    <div className="absolute top-3 left-3">
-                                        <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full bg-neutral-100 text-neutral-600 border border-neutral-200">
-                                            {level.meta?.difficulty || "medium"}
-                                        </span>
-                                    </div>
+                                    <div className="p-4 md:p-5">
+                                        <div className="flex items-start justify-between gap-2 mb-2">
+                                            <h2 className="text-sm font-semibold text-black truncate flex-1">
+                                                {level.meta?.name ||
+                                                    "Untitled Level"}
+                                            </h2>
+                                            <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 rounded-full border border-neutral-200 px-2 py-0.5">
+                                                {level.code}
+                                            </span>
+                                        </div>
 
-                                    <div className="absolute top-3 right-3 flex items-center gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                window.open(
-                                                    buildApiUrl(
-                                                        `/api/levels/vr/download/${level.code}`,
-                                                    ),
-                                                    "_blank",
-                                                )
-                                            }
-                                            className="p-2 rounded-full bg-white/90 border border-neutral-200 text-neutral-500 hover:text-black hover:bg-neutral-100 transition-colors cursor-pointer"
-                                            title="Download">
-                                            <Download size={14} />
-                                        </button>
-                                    </div>
-                                </div>
+                                        <div className="flex items-center gap-1.5 text-xs text-neutral-500 mb-4">
+                                            <CalendarDays size={12} />
+                                            <span>
+                                                {level.publishedAt
+                                                    ? new Date(
+                                                          level.publishedAt,
+                                                      ).toLocaleDateString()
+                                                    : "Recently published"}
+                                            </span>
+                                        </div>
 
-                                <div className="p-4 md:p-5">
-                                    <div className="flex items-start justify-between gap-2 mb-2">
-                                        <h2 className="text-sm font-semibold text-black truncate flex-1">
-                                            {level.meta?.name ||
-                                                "Untitled Level"}
-                                        </h2>
-                                        <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 rounded-full border border-neutral-200 px-2 py-0.5">
-                                            {level.code}
-                                        </span>
+                                        <div className="flex items-center gap-2 pt-3 border-t border-neutral-100">
+                                            <Button
+                                                variant="secondary"
+                                                size="sm"
+                                                onClick={() =>
+                                                    handleEdit(level)
+                                                }
+                                                className="flex-1">
+                                                <Edit3 size={14} />
+                                                Edit
+                                            </Button>
+                                            <Button
+                                                variant="danger"
+                                                size="sm"
+                                                isLoading={
+                                                    deletingCode === level.code
+                                                }
+                                                onClick={() =>
+                                                    handleDelete(level)
+                                                }>
+                                                <Trash2 size={14} />
+                                                Delete
+                                            </Button>
+                                        </div>
                                     </div>
-
-                                    <div className="flex items-center gap-1.5 text-xs text-neutral-500 mb-4">
-                                        <CalendarDays size={12} />
-                                        <span>
-                                            {level.publishedAt
-                                                ? new Date(
-                                                      level.publishedAt,
-                                                  ).toLocaleDateString()
-                                                : "Recently published"}
-                                        </span>
-                                    </div>
-
-                                    <div className="flex items-center gap-2 pt-3 border-t border-neutral-100">
-                                        <Button
-                                            variant="secondary"
-                                            size="sm"
-                                            onClick={() => handleEdit(level)}
-                                            className="flex-1">
-                                            <Edit3 size={14} />
-                                            Edit
-                                        </Button>
-                                        <Button
-                                            variant="danger"
-                                            size="sm"
-                                            isLoading={
-                                                deletingCode === level.code
-                                            }
-                                            onClick={() => handleDelete(level)}>
-                                            <Trash2 size={14} />
-                                            Delete
-                                        </Button>
-                                    </div>
-                                </div>
-                            </article>
-                        );
-                    })}
-                </div>
+                                </article>
+                            );
+                        })}
+                    </div>
+                    <Pagination
+                        currentPage={pagination.page}
+                        totalPages={pagination.pages}
+                        onPageChange={(page) => fetchLevels(page)}
+                    />
+                </>
             )}
         </div>
     );

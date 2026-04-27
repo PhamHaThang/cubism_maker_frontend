@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Heart, Loader2 } from "lucide-react";
 import { api } from "../services/api";
-import { Level } from "../types";
+import { Level, LevelPagination } from "../types";
 import { LevelCard } from "../components/community/LevelCard";
+import { Pagination } from "../components/ui/Pagination";
 import { useAuthStore } from "../store/authStore";
 import { Navigate } from "react-router-dom";
 
@@ -11,15 +12,26 @@ const FavoritesPage: React.FC = () => {
     const [favorites, setFavorites] = useState<Level[]>([]);
     const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
+    const [pagination, setPagination] = useState<LevelPagination>({
+        page: 1,
+        limit: 12,
+        total: 0,
+        pages: 0,
+    });
 
-    const fetchFavorites = useCallback(async () => {
+    const fetchFavorites = useCallback(async (page = 1) => {
         setLoading(true);
         try {
-            const res = await api.get("/api/favorites");
-            // Server returns { levels: [...] }
+            const res = await api.get("/api/favorites", {
+                params: { page, limit: 12 },
+            });
+            // Server returns { levels: [...], pagination: {...} }
             const levels: Level[] = res.data.levels ?? [];
             setFavorites(levels);
             setFavoriteIds(new Set(levels.map((l) => l._id)));
+            if (res.data.pagination) {
+                setPagination(res.data.pagination);
+            }
         } catch {
             setFavorites([]);
         } finally {
@@ -28,13 +40,13 @@ const FavoritesPage: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        fetchFavorites();
+        fetchFavorites(1);
     }, [fetchFavorites]);
 
     if (!user) return <Navigate to="/login" />;
 
     const handleFavoriteToggle = () => {
-        fetchFavorites(); // refetch to sync
+        fetchFavorites(pagination.page); // refetch to sync
     };
 
     return (
@@ -69,18 +81,25 @@ const FavoritesPage: React.FC = () => {
                     </p>
                 </div>
             ) : (
-                <div className="rounded-2xl border border-neutral-200 bg-white/70 p-3 md:p-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 card-stagger">
-                        {favorites.map((level) => (
-                            <LevelCard
-                                key={level._id}
-                                level={level}
-                                isFavorited={favoriteIds.has(level._id)}
-                                onFavoriteToggle={handleFavoriteToggle}
-                            />
-                        ))}
+                <>
+                    <div className="rounded-2xl border border-neutral-200 bg-white/70 p-3 md:p-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 card-stagger">
+                            {favorites.map((level) => (
+                                <LevelCard
+                                    key={level._id}
+                                    level={level}
+                                    isFavorited={favoriteIds.has(level._id)}
+                                    onFavoriteToggle={handleFavoriteToggle}
+                                />
+                            ))}
+                        </div>
                     </div>
-                </div>
+                    <Pagination
+                        currentPage={pagination.page}
+                        totalPages={pagination.pages}
+                        onPageChange={(page) => fetchFavorites(page)}
+                    />
+                </>
             )}
         </div>
     );
