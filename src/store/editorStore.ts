@@ -26,7 +26,12 @@ interface EditorState {
     currentColor: string;
     currentPieceId: number;
     pieces: EditorPiece[];
-    editingLevel: { code: string; name: string; difficulty: string } | null;
+    editingLevel: {
+        code: string;
+        name: string;
+        difficulty: string;
+        timeLimitSeconds?: number;
+    } | null;
 
     // History
     undoStack: HistorySnapshot[];
@@ -208,6 +213,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
                 code: level.code,
                 name: level.meta?.name || "Untitled Level",
                 difficulty: level.meta?.difficulty || "medium",
+                timeLimitSeconds: level.meta?.timeLimitSeconds ?? 0,
             },
             undoStack: [],
             redoStack: [],

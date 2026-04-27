@@ -24,6 +24,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [difficulty, setDifficulty] = useState("medium");
+    const [timeSeconds, setTimeSeconds] = useState("0");
     const [publishing, setPublishing] = useState(false);
     const [publishedCode, setPublishedCode] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
@@ -34,6 +35,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
         if (!isOpen) return;
         setName(editingLevel?.name || "");
         setDifficulty(editingLevel?.difficulty || "medium");
+        setTimeSeconds(String(editingLevel?.timeLimitSeconds ?? 0));
     }, [editingLevel, isOpen]);
 
     const handlePublish = async () => {
@@ -50,6 +52,18 @@ export const PublishModal: React.FC<PublishModalProps> = ({
             return;
         }
 
+        const parsedTimeSeconds = Number(timeSeconds);
+        if (
+            Number.isNaN(parsedTimeSeconds) ||
+            parsedTimeSeconds < 0 ||
+            !Number.isFinite(parsedTimeSeconds)
+        ) {
+            toast.error("Time must be a non-negative number of seconds");
+            return;
+        }
+
+        const normalizedTimeSeconds = Math.floor(parsedTimeSeconds);
+
         setPublishing(true);
         try {
             const blueprint = generateBlueprint();
@@ -58,6 +72,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                     meta: {
                         name: name.trim(),
                         difficulty,
+                        timeLimitSeconds: normalizedTimeSeconds,
                     },
                     grid: blueprint.grid,
                     pieces: blueprint.pieces,
@@ -69,6 +84,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                     name: name.trim(),
                     description: description.trim(),
                     difficulty,
+                    timeSeconds: normalizedTimeSeconds,
                     blueprint,
                 });
                 setPublishedCode(res.data.code);
@@ -96,6 +112,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
         setName("");
         setDescription("");
         setDifficulty("medium");
+        setTimeSeconds("0");
         if (!isEditing) {
             clearEditingLevel();
         }
@@ -194,6 +211,16 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                             <option value="expert">Expert</option>
                         </select>
                     </div>
+
+                    <Input
+                        label="Time (seconds)"
+                        type="number"
+                        min={0}
+                        step={1}
+                        value={timeSeconds}
+                        onChange={(e) => setTimeSeconds(e.target.value)}
+                        placeholder="0"
+                    />
 
                     <div className="p-3.5 bg-neutral-50 rounded-xl border border-neutral-100">
                         <div className="text-xs text-neutral-500">
