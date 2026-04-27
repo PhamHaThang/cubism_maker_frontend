@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Modal } from "../ui/Modal";
 import { Input } from "../ui/Input";
 import { Button } from "../ui/Button";
@@ -17,9 +18,15 @@ export const PublishModal: React.FC<PublishModalProps> = ({
     isOpen,
     onClose,
 }) => {
+    const navigate = useNavigate();
     const { user } = useAuthStore();
-    const { generateBlueprint, voxels, editingLevel, clearEditingLevel } =
-        useEditorStore();
+    const {
+        generateBlueprint,
+        voxels,
+        editingLevel,
+        clearEditingLevel,
+        updateEditingLevel,
+    } = useEditorStore();
 
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
@@ -76,6 +83,12 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                     },
                     grid: blueprint.grid,
                     pieces: blueprint.pieces,
+                });
+                // Update editing level in store with new metadata
+                updateEditingLevel({
+                    name: name.trim(),
+                    difficulty,
+                    timeLimitSeconds: normalizedTimeSeconds,
                 });
                 setPublishedCode(editingLevel.code);
                 toast.success("Level updated successfully!");
@@ -169,6 +182,16 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                                 ? "Download Updated .cube"
                                 : "Download .cube"}
                         </Button>
+                        {isEditing && (
+                            <Button
+                                variant="primary"
+                                onClick={() => {
+                                    handleClose();
+                                    navigate("/my-levels");
+                                }}>
+                                View in My Levels
+                            </Button>
+                        )}
                     </div>
                 </div>
             ) : (

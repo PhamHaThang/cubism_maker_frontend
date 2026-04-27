@@ -5,10 +5,11 @@ import { Level, LevelPagination } from "../types";
 import { LevelCard } from "../components/community/LevelCard";
 import { Pagination } from "../components/ui/Pagination";
 import { useAuthStore } from "../store/authStore";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 
 const FavoritesPage: React.FC = () => {
     const { user } = useAuthStore();
+    const location = useLocation();
     const [favorites, setFavorites] = useState<Level[]>([]);
     const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
@@ -42,6 +43,28 @@ const FavoritesPage: React.FC = () => {
     useEffect(() => {
         fetchFavorites(1);
     }, [fetchFavorites]);
+
+    // Refetch when navigating back to this page
+    useEffect(() => {
+        fetchFavorites(1);
+    }, [location.pathname]);
+
+    // Refetch when page becomes visible (tab focus)
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (!document.hidden) {
+                fetchFavorites(pagination.page);
+            }
+        };
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        return () => {
+            document.removeEventListener(
+                "visibilitychange",
+                handleVisibilityChange,
+            );
+        };
+    }, [fetchFavorites, pagination.page]);
 
     if (!user) return <Navigate to="/login" />;
 

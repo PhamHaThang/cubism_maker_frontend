@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, useLocation } from "react-router-dom";
 import {
     Box,
     CalendarDays,
@@ -21,6 +21,7 @@ const MyLevelsPage: React.FC = () => {
     const { user } = useAuthStore();
     const { loadLevel } = useEditorStore();
     const navigate = useNavigate();
+    const location = useLocation();
     const [levels, setLevels] = useState<Level[]>([]);
     const [loading, setLoading] = useState(true);
     const [deletingCode, setDeletingCode] = useState<string | null>(null);
@@ -37,7 +38,7 @@ const MyLevelsPage: React.FC = () => {
             setLoading(true);
             try {
                 const res = await api.get(`/api/levels/user/${user.id}`, {
-                    params: { page, limit: 6 },
+                    params: { page, limit: 12 },
                 });
                 setLevels(res.data.levels ?? []);
                 if (res.data.pagination) {
@@ -56,6 +57,28 @@ const MyLevelsPage: React.FC = () => {
     useEffect(() => {
         fetchLevels(1);
     }, [fetchLevels]);
+
+    // Refetch when navigating back to this page
+    useEffect(() => {
+        fetchLevels(1);
+    }, [location.pathname]);
+
+    // Refetch when page becomes visible (tab focus)
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (!document.hidden) {
+                fetchLevels(pagination.page);
+            }
+        };
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        return () => {
+            document.removeEventListener(
+                "visibilitychange",
+                handleVisibilityChange,
+            );
+        };
+    }, [fetchLevels, pagination.page]);
 
     if (!user) return <Navigate to="/login" />;
 

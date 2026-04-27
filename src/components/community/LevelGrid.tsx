@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Search, SlidersHorizontal, Loader2 } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import { Level, LevelPagination } from "../../types";
 import { api } from "../../services/api";
 import { LevelCard } from "./LevelCard";
@@ -8,6 +9,7 @@ import { useAuthStore } from "../../store/authStore";
 
 export const LevelGrid: React.FC = () => {
     const { user } = useAuthStore();
+    const location = useLocation();
     const [levels, setLevels] = useState<Level[]>([]);
     const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
@@ -28,7 +30,7 @@ export const LevelGrid: React.FC = () => {
                 const params: Record<string, string | number> = {
                     sort,
                     page,
-                    limit: 6,
+                    limit: 12,
                 };
                 if (search) params.search = search;
                 if (difficulty !== "all") params.difficulty = difficulty;
@@ -67,6 +69,29 @@ export const LevelGrid: React.FC = () => {
         fetchFavorites();
     }, [fetchFavorites]);
 
+    // Refetch when navigating back to Browse Levels
+    useEffect(() => {
+        fetchLevels(1);
+        fetchFavorites();
+    }, [location.pathname, fetchLevels, fetchFavorites]);
+
+    // Refetch when page becomes visible (tab focus)
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (!document.hidden) {
+                fetchLevels(pagination.page);
+                fetchFavorites();
+            }
+        };
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        return () => {
+            document.removeEventListener(
+                "visibilitychange",
+                handleVisibilityChange,
+            );
+        };
+    }, [fetchLevels, fetchFavorites, pagination.page]);
     const handleFavoriteToggle = (levelId: string) => {
         setFavoriteIds((prev) => {
             const next = new Set(prev);
