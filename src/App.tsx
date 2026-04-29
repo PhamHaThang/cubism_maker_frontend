@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { Layout } from "./components/layout/Layout";
 import { useAuthStore } from "./store/authStore";
@@ -39,6 +39,7 @@ const App: React.FC = () => {
                     <Route path="/" element={<HomePage />} />
                     <Route path="/levels" element={<BrowseLevelsPage />} />
                     <Route path="/editor" element={<EditorPage />} />
+                    <Route path="/admin/editor" element={<Navigate to="/editor" replace />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/favorites" element={<FavoritesPage />} />

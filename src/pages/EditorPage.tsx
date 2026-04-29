@@ -3,10 +3,12 @@ import { VoxelEditor } from "../components/editor/VoxelEditor";
 import { PublishModal } from "../components/editor/PublishModal";
 import { PieceListPanel } from "../components/editor/PieceListPanel";
 import { useEditorStore } from "../store/editorStore";
+import { useAuthStore } from "../store/authStore";
 
 const EditorPage: React.FC = () => {
     const [showPublish, setShowPublish] = useState(false);
     const { editingLevel } = useEditorStore();
+    const { user } = useAuthStore();
 
     useEffect(() => {
         const prevBodyOverflow = document.body.style.overflow;
@@ -93,6 +95,7 @@ const EditorPage: React.FC = () => {
             <PublishModal
                 isOpen={showPublish}
                 onClose={() => setShowPublish(false)}
+                isAdminEditor={!!user?.isAdmin}
             />
         </div>
     );

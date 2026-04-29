@@ -12,11 +12,13 @@ import toast from "react-hot-toast";
 interface PublishModalProps {
     isOpen: boolean;
     onClose: () => void;
+    isAdminEditor?: boolean;
 }
 
 export const PublishModal: React.FC<PublishModalProps> = ({
     isOpen,
     onClose,
+    isAdminEditor = false,
 }) => {
     const navigate = useNavigate();
     const { user } = useAuthStore();
@@ -36,6 +38,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
     const [publishing, setPublishing] = useState(false);
     const [publishedCode, setPublishedCode] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
+    const [isMainMenu, setIsMainMenu] = useState(false);
 
     const isEditing = !!editingLevel;
 
@@ -45,7 +48,8 @@ export const PublishModal: React.FC<PublishModalProps> = ({
         setDifficulty(editingLevel?.difficulty || "medium");
         setTimeSeconds(String(editingLevel?.timeLimitSeconds ?? 0));
         setStatus(editingLevel?.status || "public");
-    }, [editingLevel, isOpen]);
+        setIsMainMenu(editingLevel?.isMainMenu ?? isAdminEditor);
+    }, [editingLevel, isOpen, isAdminEditor]);
 
     const handlePublish = async () => {
         if (!user) {
@@ -77,7 +81,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
         try {
             const blueprint = generateBlueprint();
             if (isEditing && editingLevel?.code) {
-                await api.put(`/api/levels/${editingLevel.code}`, {
+                const payload: any = {
                     status,
                     meta: {
                         name: name.trim(),
@@ -86,25 +90,34 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                     },
                     grid: blueprint.grid,
                     pieces: blueprint.pieces,
-                });
+                };
+                if (isAdminEditor) {
+                    payload.isMainMenu = isMainMenu;
+                }
+                await api.put(`/api/levels/${editingLevel.code}`, payload);
                 // Update editing level in store with new metadata
                 updateEditingLevel({
                     name: name.trim(),
                     difficulty,
                     timeLimitSeconds: normalizedTimeSeconds,
                     status,
+                    isMainMenu: isAdminEditor ? isMainMenu : editingLevel.isMainMenu,
                 });
                 setPublishedCode(editingLevel.code);
                 toast.success("Level updated successfully!");
             } else {
-                const res = await api.post("/api/levels", {
+                const payload: any = {
                     name: name.trim(),
                     description: description.trim(),
                     difficulty,
                     timeSeconds: normalizedTimeSeconds,
                     status,
                     blueprint,
-                });
+                };
+                if (isAdminEditor) {
+                    payload.isMainMenu = isMainMenu;
+                }
+                const res = await api.post("/api/levels", payload);
                 setPublishedCode(res.data.code);
                 toast.success("Level published successfully!");
             }
@@ -132,6 +145,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
         setDifficulty("medium");
         setTimeSeconds("0");
         setStatus("public");
+        setIsMainMenu(false);
         if (!isEditing) {
             clearEditingLevel();
         }
@@ -267,6 +281,21 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                             <option value="private">Private (only me)</option>
                         </select>
                     </div>
+
+                    {isAdminEditor && (
+                        <div className="flex items-center gap-2 mt-2">
+                            <input
+                                type="checkbox"
+                                id="isMainMenu"
+                                checked={isMainMenu}
+                                onChange={(e) => setIsMainMenu(e.target.checked)}
+                                className="w-4 h-4 text-black border-neutral-300 rounded focus:ring-black"
+                            />
+                            <label htmlFor="isMainMenu" className="text-sm font-medium text-neutral-700 cursor-pointer">
+                                Mark as Main Menu Level
+                            </label>
+                        </div>
+                    )}
 
                     <div className="p-3.5 bg-neutral-50 rounded-xl border border-neutral-100">
                         <div className="text-xs text-neutral-500">

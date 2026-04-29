@@ -3,6 +3,7 @@ export interface User {
     id: string;
     username: string;
     email: string;
+    isAdmin?: boolean;
 }
 
 export interface PieceMeta {
@@ -37,6 +38,7 @@ export interface Level {
     downloadCount?: number;
     publishedAt: string;
     createdAt: string;
+    isMainMenu?: boolean;
 }
 
 export interface Voxel {
