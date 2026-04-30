@@ -13,8 +13,9 @@ export const LevelGrid: React.FC = () => {
     const [levels, setLevels] = useState<Level[]>([]);
     const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
+    const [searchInput, setSearchInput] = useState("");
     const [search, setSearch] = useState("");
-    const [sort, setSort] = useState<"newest" | "popular" | "name">("newest");
+    const [sort, setSort] = useState<"newest" | "oldest" | "popular" | "name">("newest");
     const [difficulty, setDifficulty] = useState<string>("all");
     const [pagination, setPagination] = useState<LevelPagination>({
         page: 1,
@@ -70,6 +71,15 @@ export const LevelGrid: React.FC = () => {
         fetchFavorites();
     }, [fetchFavorites]);
 
+    useEffect(() => {
+        const timer = window.setTimeout(() => {
+            const nextSearch = searchInput.trim();
+            setSearch((prev) => (prev === nextSearch ? prev : nextSearch));
+        }, 400);
+
+        return () => window.clearTimeout(timer);
+    }, [searchInput]);
+
     // Refetch when navigating back to Browse Levels
     useEffect(() => {
         fetchLevels(1);
@@ -114,9 +124,13 @@ export const LevelGrid: React.FC = () => {
                     <input
                         type="text"
                         placeholder="Search levels..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && fetchLevels(1)}
+                        value={searchInput}
+                        onChange={(e) => setSearchInput(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                setSearch(searchInput.trim());
+                            }
+                        }}
                         className="w-full pl-10 pr-4 py-2.5 md:py-3 text-sm bg-white border border-neutral-200 rounded-xl outline-none focus:border-black focus:ring-2 focus:ring-black/10 transition-all"
                     />
                 </div>
@@ -143,6 +157,7 @@ export const LevelGrid: React.FC = () => {
                     onChange={(e) => setSort(e.target.value as any)}
                     className="w-full lg:w-auto px-3.5 py-2.5 md:py-3 text-xs bg-white border border-neutral-200 rounded-xl outline-none focus:border-black focus:ring-2 focus:ring-black/10 cursor-pointer">
                     <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
                     <option value="popular">Most Popular</option>
                     <option value="name">Alphabetical</option>
                 </select>
