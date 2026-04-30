@@ -296,7 +296,17 @@ const MyLevelsPage: React.FC = () => {
                       <h2 className="text-sm font-semibold text-black truncate flex-1">
                         {level.meta?.name || "Untitled Level"}
                       </h2>
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                        {user?.isAdmin && (
+                          <span
+                            className={`text-[10px] font-semibold uppercase tracking-wider rounded-full border px-2 py-0.5 ${
+                              level.isMainMenu
+                                ? "text-violet-700 border-violet-200 bg-violet-50"
+                                : "text-slate-700 border-slate-200 bg-slate-50"
+                            }`}>
+                            {level.isMainMenu ? "Main Menu" : "Custom"}
+                          </span>
+                        )}
                         <span
                           className={`text-[10px] font-semibold uppercase tracking-wider rounded-full border px-2 py-0.5 ${
                             level.status === "private"
