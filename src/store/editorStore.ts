@@ -33,6 +33,7 @@ interface EditorState {
         difficulty: string;
         timeLimitSeconds?: number;
         status: "public" | "private";
+        isMainMenu?: boolean;
     } | null;
 
     // History
@@ -53,6 +54,7 @@ interface EditorState {
         difficulty?: string;
         timeLimitSeconds?: number;
         status?: "public" | "private";
+        isMainMenu?: boolean;
     }) => void;
     clearEditingLevel: () => void;
     clearEditorState: () => void;
@@ -240,6 +242,7 @@ export const useEditorStore = create<EditorState>()(
                         timeLimitSeconds: level.meta?.timeLimitSeconds ?? 0,
                         status:
                             level.status === "private" ? "private" : "public",
+                        isMainMenu: level.isMainMenu,
                     },
                     undoStack: [],
                     redoStack: [],
@@ -261,6 +264,7 @@ export const useEditorStore = create<EditorState>()(
                             updates.timeLimitSeconds ??
                             state.editingLevel.timeLimitSeconds,
                         status: updates.status ?? state.editingLevel.status,
+                        isMainMenu: updates.isMainMenu ?? state.editingLevel.isMainMenu,
                     },
                 });
             },
