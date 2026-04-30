@@ -39,6 +39,7 @@ export interface Level {
     publishedAt: string;
     createdAt: string;
     isMainMenu?: boolean;
+    order?: number;
 }
 
 export interface Voxel {

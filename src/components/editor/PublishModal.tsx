@@ -39,6 +39,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
     const [publishedCode, setPublishedCode] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
     const [isMainMenu, setIsMainMenu] = useState(false);
+    const [order, setOrder] = useState("0");
 
     const isEditing = !!editingLevel;
 
@@ -49,6 +50,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
         setTimeSeconds(String(editingLevel?.timeLimitSeconds ?? 0));
         setStatus(editingLevel?.status || "public");
         setIsMainMenu(editingLevel?.isMainMenu ?? isAdminEditor);
+        setOrder(String(editingLevel?.order ?? 0));
     }, [editingLevel, isOpen, isAdminEditor]);
 
     const handlePublish = async () => {
@@ -93,6 +95,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                 };
                 if (isAdminEditor) {
                     payload.isMainMenu = isMainMenu;
+                    if (isMainMenu) payload.order = Number(order);
                 }
                 await api.put(`/api/levels/${editingLevel.code}`, payload);
                 // Update editing level in store with new metadata
@@ -102,6 +105,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                     timeLimitSeconds: normalizedTimeSeconds,
                     status,
                     isMainMenu: isAdminEditor ? isMainMenu : editingLevel.isMainMenu,
+                    order: isAdminEditor && isMainMenu ? Number(order) : editingLevel.order,
                 });
                 setPublishedCode(editingLevel.code);
                 toast.success("Level updated successfully!");
@@ -116,6 +120,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                 };
                 if (isAdminEditor) {
                     payload.isMainMenu = isMainMenu;
+                    if (isMainMenu) payload.order = Number(order);
                 }
                 const res = await api.post("/api/levels", payload);
                 setPublishedCode(res.data.code);
@@ -146,6 +151,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
         setTimeSeconds("0");
         setStatus("public");
         setIsMainMenu(false);
+        setOrder("0");
         if (!isEditing) {
             clearEditingLevel();
         }
@@ -283,17 +289,37 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                     </div>
 
                     {isAdminEditor && (
-                        <div className="flex items-center gap-2 mt-2">
-                            <input
-                                type="checkbox"
-                                id="isMainMenu"
-                                checked={isMainMenu}
-                                onChange={(e) => setIsMainMenu(e.target.checked)}
-                                className="w-4 h-4 text-black border-neutral-300 rounded focus:ring-black"
-                            />
-                            <label htmlFor="isMainMenu" className="text-sm font-medium text-neutral-700 cursor-pointer">
-                                Mark as Main Menu Level
-                            </label>
+                        <div className="flex flex-col gap-3 mt-2 border-t border-neutral-100 pt-4">
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="checkbox"
+                                    id="isMainMenu"
+                                    checked={isMainMenu}
+                                    onChange={(e) => setIsMainMenu(e.target.checked)}
+                                    className="w-4 h-4 text-black border-neutral-300 rounded focus:ring-black"
+                                />
+                                <label htmlFor="isMainMenu" className="text-sm font-medium text-neutral-700 cursor-pointer">
+                                    Mark as Main Menu Level
+                                </label>
+                            </div>
+                            
+                            {isMainMenu && (
+                                <div className="space-y-1.5 pl-6">
+                                    <label className="text-sm font-medium text-neutral-700">
+                                        Level Order
+                                    </label>
+                                    <input
+                                        type="number"
+                                        value={order}
+                                        onChange={(e) => setOrder(e.target.value)}
+                                        className="w-full px-3 py-2 text-sm bg-neutral-50 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/5"
+                                        placeholder="0"
+                                    />
+                                    <p className="text-xs text-neutral-500">
+                                        Used for sorting levels in the Main Menu (higher number = lower priority)
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     )}
 

@@ -34,6 +34,7 @@ interface EditorState {
         timeLimitSeconds?: number;
         status: "public" | "private";
         isMainMenu?: boolean;
+        order?: number;
     } | null;
 
     // History
@@ -55,6 +56,7 @@ interface EditorState {
         timeLimitSeconds?: number;
         status?: "public" | "private";
         isMainMenu?: boolean;
+        order?: number;
     }) => void;
     clearEditingLevel: () => void;
     clearEditorState: () => void;
@@ -243,6 +245,7 @@ export const useEditorStore = create<EditorState>()(
                         status:
                             level.status === "private" ? "private" : "public",
                         isMainMenu: level.isMainMenu,
+                        order: level.order,
                     },
                     undoStack: [],
                     redoStack: [],
@@ -265,6 +268,7 @@ export const useEditorStore = create<EditorState>()(
                             state.editingLevel.timeLimitSeconds,
                         status: updates.status ?? state.editingLevel.status,
                         isMainMenu: updates.isMainMenu ?? state.editingLevel.isMainMenu,
+                        order: updates.order ?? state.editingLevel.order,
                     },
                 });
             },
