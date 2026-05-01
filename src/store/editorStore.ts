@@ -321,7 +321,6 @@ export const useEditorStore = create<EditorState>()(
                     pieces: [{ id: 0, color: PRESET_COLORS[0] }],
                     currentPieceId: 0,
                     currentColor: PRESET_COLORS[0],
-                    editingLevel: null,
                     undoStack: [...state.undoStack, snap].slice(-50),
                     redoStack: [],
                 });
