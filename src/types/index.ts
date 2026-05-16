@@ -4,6 +4,7 @@ export interface User {
     username: string;
     email: string;
     isAdmin?: boolean;
+    isBanned?: boolean;
 }
 
 export interface PieceMeta {
@@ -27,6 +28,7 @@ export interface Level {
     _id: string;
     code: string;
     status: "public" | "private";
+    reviewStatus?: "pending" | "approved" | "rejected";
     meta: PieceMeta;
     grid: number[][];
     pieces: BlueprintPiece[];

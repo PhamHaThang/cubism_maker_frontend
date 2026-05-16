@@ -7,6 +7,7 @@ interface PaginationProps {
     totalItems?: number;
     itemsPerPage?: number;
     onPageChange: (page: number) => void;
+    type?: string;
 }
 
 export const Pagination: React.FC<PaginationProps> = ({
@@ -15,6 +16,7 @@ export const Pagination: React.FC<PaginationProps> = ({
     totalItems,
     itemsPerPage,
     onPageChange,
+    type = "levels",
 }) => {
     if (totalPages <= 1 && !totalItems) return null;
 
@@ -71,7 +73,7 @@ export const Pagination: React.FC<PaginationProps> = ({
             }`}>
             {hasMeta && totalItems > 0 && (
                 <div className="text-xs text-neutral-500">
-                    Showing {startItem}-{endItem} of {totalItems} levels
+                    Showing {startItem}-{endItem} of {totalItems} {type}
                 </div>
             )}
 

@@ -11,6 +11,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import FavoritesPage from "./pages/FavoritesPage";
 import MyLevelsPage from "./pages/MyLevelsPage";
+import AdminPage from "./pages/AdminPage";
 
 const App: React.FC = () => {
     const { checkAuth } = useAuthStore();
@@ -39,11 +40,15 @@ const App: React.FC = () => {
                     <Route path="/" element={<HomePage />} />
                     <Route path="/levels" element={<BrowseLevelsPage />} />
                     <Route path="/editor" element={<EditorPage />} />
-                    <Route path="/admin/editor" element={<Navigate to="/editor" replace />} />
+                    <Route
+                        path="/admin/editor"
+                        element={<Navigate to="/editor" replace />}
+                    />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/favorites" element={<FavoritesPage />} />
                     <Route path="/my-levels" element={<MyLevelsPage />} />
+                    <Route path="/admin" element={<AdminPage />} />
                 </Route>
             </Routes>
         </BrowserRouter>

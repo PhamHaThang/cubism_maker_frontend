@@ -42,6 +42,7 @@ export const PublishModal: React.FC<PublishModalProps> = ({
     const [order, setOrder] = useState("0");
 
     const isEditing = !!editingLevel;
+    const isPendingReview = !isEditing && !isAdminEditor;
 
     React.useEffect(() => {
         if (!isOpen) return;
@@ -104,8 +105,13 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                     difficulty,
                     timeLimitSeconds: normalizedTimeSeconds,
                     status,
-                    isMainMenu: isAdminEditor ? isMainMenu : editingLevel.isMainMenu,
-                    order: isAdminEditor && isMainMenu ? Number(order) : editingLevel.order,
+                    isMainMenu: isAdminEditor
+                        ? isMainMenu
+                        : editingLevel.isMainMenu,
+                    order:
+                        isAdminEditor && isMainMenu
+                            ? Number(order)
+                            : editingLevel.order,
                 });
                 setPublishedCode(editingLevel.code);
                 toast.success("Level updated successfully!");
@@ -124,7 +130,11 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                 }
                 const res = await api.post("/api/levels", payload);
                 setPublishedCode(res.data.code);
-                toast.success("Level published successfully!");
+                toast.success(
+                    isAdminEditor
+                        ? "Level published successfully!"
+                        : "Level submitted for review!",
+                );
             }
         } catch (error: any) {
             toast.error(
@@ -168,12 +178,18 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                 <div className="text-center space-y-5 animate-fade-in py-1">
                     <div className="text-4xl">🎉</div>
                     <h3 className="text-lg font-semibold">
-                        {isEditing ? "Level Updated!" : "Level Published!"}
+                        {isEditing
+                            ? "Level Updated!"
+                            : isPendingReview
+                              ? "Level Submitted!"
+                              : "Level Published!"}
                     </h3>
                     <p className="text-sm text-neutral-500">
                         {isEditing
                             ? "Your changes have been saved. The level code stays the same:"
-                            : "Share this code with VR players:"}
+                            : isPendingReview
+                              ? "Your level is pending review. Share this code after approval:"
+                              : "Share this code with VR players:"}
                     </p>
 
                     <div className="flex items-center justify-center gap-2.5">
@@ -193,21 +209,32 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                         <Button variant="secondary" onClick={handleClose}>
                             Close
                         </Button>
-                        <Button
-                            variant="primary"
-                            onClick={() =>
-                                window.open(
-                                    buildApiUrl(
-                                        `/api/levels/vr/download/${publishedCode}`,
-                                    ),
-                                    "_blank",
-                                )
-                            }>
-                            <ExternalLink size={14} />
-                            {isEditing
-                                ? "Download Updated .cube"
-                                : "Download .cube"}
-                        </Button>
+                        {isPendingReview ? (
+                            <Button
+                                variant="primary"
+                                onClick={() => {
+                                    handleClose();
+                                    navigate("/my-levels");
+                                }}>
+                                Track status
+                            </Button>
+                        ) : (
+                            <Button
+                                variant="primary"
+                                onClick={() =>
+                                    window.open(
+                                        buildApiUrl(
+                                            `/api/levels/vr/download/${publishedCode}`,
+                                        ),
+                                        "_blank",
+                                    )
+                                }>
+                                <ExternalLink size={14} />
+                                {isEditing
+                                    ? "Download Updated .cube"
+                                    : "Download .cube"}
+                            </Button>
+                        )}
                         {isEditing && (
                             <Button
                                 variant="primary"
@@ -286,6 +313,12 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                             <option value="public">Public</option>
                             <option value="private">Private (only me)</option>
                         </select>
+                        {!isAdminEditor && status === "public" && (
+                            <p className="text-xs text-neutral-500">
+                                Public levels require admin approval before
+                                being visible.
+                            </p>
+                        )}
                     </div>
 
                     {isAdminEditor && (
@@ -295,14 +328,18 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                                     type="checkbox"
                                     id="isMainMenu"
                                     checked={isMainMenu}
-                                    onChange={(e) => setIsMainMenu(e.target.checked)}
+                                    onChange={(e) =>
+                                        setIsMainMenu(e.target.checked)
+                                    }
                                     className="w-4 h-4 text-black border-neutral-300 rounded focus:ring-black"
                                 />
-                                <label htmlFor="isMainMenu" className="text-sm font-medium text-neutral-700 cursor-pointer">
+                                <label
+                                    htmlFor="isMainMenu"
+                                    className="text-sm font-medium text-neutral-700 cursor-pointer">
                                     Mark as Main Menu Level
                                 </label>
                             </div>
-                            
+
                             {isMainMenu && (
                                 <div className="space-y-1.5 pl-6">
                                     <label className="text-sm font-medium text-neutral-700">
@@ -311,12 +348,15 @@ export const PublishModal: React.FC<PublishModalProps> = ({
                                     <input
                                         type="number"
                                         value={order}
-                                        onChange={(e) => setOrder(e.target.value)}
+                                        onChange={(e) =>
+                                            setOrder(e.target.value)
+                                        }
                                         className="w-full px-3 py-2 text-sm bg-neutral-50 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/5"
                                         placeholder="0"
                                     />
                                     <p className="text-xs text-neutral-500">
-                                        Used for sorting levels in the Main Menu (higher number = lower priority)
+                                        Used for sorting levels in the Main Menu
+                                        (higher number = lower priority)
                                     </p>
                                 </div>
                             )}

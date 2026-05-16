@@ -68,6 +68,17 @@ export const Navbar: React.FC = () => {
                                 My Levels
                             </Link>
                         )}
+                        {user?.isAdmin && (
+                            <Link
+                                to="/admin"
+                                className={`px-3.5 py-2 text-xs font-semibold rounded-lg transition-all duration-150 ease-in-out ${
+                                    isActive("/admin")
+                                        ? "bg-black text-white shadow-sm"
+                                        : "text-neutral-600 hover:text-black hover:bg-neutral-100 hover:-translate-y-[1px]"
+                                }`}>
+                                Admin
+                            </Link>
+                        )}
                     </nav>
 
                     {/* Auth */}
@@ -119,7 +130,11 @@ export const Navbar: React.FC = () => {
 
                 <nav
                     className={`md:hidden mt-2 grid gap-2 ${
-                        user ? "grid-cols-4" : "grid-cols-3"
+                        user?.isAdmin
+                            ? "grid-cols-5"
+                            : user
+                              ? "grid-cols-4"
+                              : "grid-cols-3"
                     }`}>
                     <Link
                         to="/"
@@ -158,6 +173,17 @@ export const Navbar: React.FC = () => {
                                     : "text-neutral-600 bg-white hover:text-black hover:bg-neutral-100 border border-neutral-200"
                             }`}>
                             My Levels
+                        </Link>
+                    )}
+                    {user?.isAdmin && (
+                        <Link
+                            to="/admin"
+                            className={` px-3 py-2 text-[11px] text-center font-semibold rounded-xl transition-all duration-150 ease-in-out ${
+                                isActive("/admin")
+                                    ? "bg-black text-white shadow-sm"
+                                    : "text-neutral-600 bg-white hover:text-black hover:bg-neutral-100 border border-neutral-200"
+                            }`}>
+                            Admin
                         </Link>
                     )}
                 </nav>
